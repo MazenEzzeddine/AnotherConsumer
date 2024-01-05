@@ -1,0 +1,17 @@
+/target/classes/RebalanceListener.class
+/target/classes/CustomerDeserializer.class
+/target/anotherconsumer-1.0-SNAPSHOT.jar
+/target/classes/Customer.class
+/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst
+/.idea/compiler.xml
+/target/maven-archiver/pom.properties
+/target/original-anotherconsumer-1.0-SNAPSHOT.jar
+/.idea/misc.xml
+/target/classes/log4j2.properties
+/target/classes/KafkaConsumerWithTreadDemo.class
+/target/classes/KafkaConsumerWithTreadDemo$ConsumerThread.class
+/.idea/jarRepositories.xml
+/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst
+/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst
+/.idea/encodings.xml
+/dependency-reduced-pom.xml

@@ -7,6 +7,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
@@ -108,6 +109,9 @@ public class KafkaConsumerWithTreadDemo {
             consumer.subscribe(List.of("testtopic1"), new RebalanceListener());
         }
 
+
+        Instant lastCommitTime = Instant.now();
+
         @Override
         public void run() {
             try {
@@ -124,8 +128,14 @@ public class KafkaConsumerWithTreadDemo {
                         Thread.sleep(5);
 
                         logger.info(" latency is {}", System.currentTimeMillis() - record.timestamp());
+
+
+                        if (Duration.between(lastCommitTime, Instant.now()).toMillis() >= 250) {
+                            consumer.commitSync();
+                            lastCommitTime = Instant.now();
+
+                        }
                     }
-                    consumer.commitSync();
 
                 }
             } catch (WakeupException | InterruptedException e) {
