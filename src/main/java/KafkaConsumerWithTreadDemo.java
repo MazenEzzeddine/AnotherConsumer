@@ -6,8 +6,12 @@ import org.apache.kafka.common.errors.WakeupException;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
@@ -97,8 +101,8 @@ public class KafkaConsumerWithTreadDemo {
             properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, CustomerDeserializer.class.getName());
             properties.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "testgroup1");
             properties.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-            //properties.setProperty(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, "500");
-            properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "100");
+            properties.setProperty(ConsumerConfig.HEARTBEAT_INTERVAL_MS_CONFIG, "500");
+            properties.setProperty(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, "200");
 
 
 
@@ -107,17 +111,33 @@ public class KafkaConsumerWithTreadDemo {
 
             // Subscribe Consumer to Our Topics
             consumer.subscribe(List.of("testtopic1"), new RebalanceListener());
+
         }
 
 
         Instant lastCommitTime = Instant.now();
+
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("MM/dd/yyyy'T'HH:mm:ss.SSSSSS");
+
+
 
         @Override
         public void run() {
             try {
                 // Poll the data
                 while (true) {
-                    ConsumerRecords<String, Customer> records = consumer.poll(Duration.ofMillis(Long.MAX_VALUE));
+                    ConsumerRecords<String, Customer> records = consumer.poll(0);
+
+
+                    if (Duration.between(lastCommitTime, Instant.now()).toMillis() >= 250) {
+                        consumer.commitAsync();
+                        //consumer.commitAsync();
+                        lastCommitTime = Instant.now();
+
+                    }
+
+
 
                     for (ConsumerRecord<String, Customer> record : records) {
                        /* logger.info("Key: " + record.key() +
@@ -127,15 +147,25 @@ public class KafkaConsumerWithTreadDemo {
                         );*/
                         Thread.sleep(5);
 
-                        logger.info(" latency is {}", System.currentTimeMillis() - record.timestamp());
+                        Timestamp timestamp = new Timestamp(record.timestamp());
+                        Date date = new Date(timestamp.getTime());
+
+             /*           logger.info(" latency is {}, insertion time is {}, processing time is {}",
+                                System.currentTimeMillis() - record.timestamp(), record.timestamp(), Instant.now());*/
 
 
-                        if (Duration.between(lastCommitTime, Instant.now()).toMillis() >= 250) {
-                            consumer.commitSync();
-                            lastCommitTime = Instant.now();
+                        logger.info(" latency is {}, insertion time is {}, processing time is {}",
+                                System.currentTimeMillis() - record.timestamp(), simpleDateFormat.format(date), Instant.now());
 
-                        }
+
+
+
+                        //consumer.commitSync();
+
                     }
+
+                   // consumer.commitSync();
+
 
                 }
             } catch (WakeupException | InterruptedException e) {
